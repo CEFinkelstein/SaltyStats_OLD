@@ -1,0 +1,48 @@
+SaltyStats 0.1 by Mitchell McLean
+------------------------------------------------------------------------------
+ABOUT:
+
+SaltyStats is a stat tracker for Salty Bet. It records win/loss records of
+characters and displays the stats of a fight's combatants.
+
+SaltyStats works by reading Salty Bet's Twitch chat. Specifically, it pays
+attention to messages from the bot Waifu4u. The bot sends messages about
+fights, and SaltyStats records this data locally.
+
+SaltyStats connects to Twitch chat via IRC. You need to specify your username
+and OAuth token in config.cfg in order to use SaltyStats. If config.cfg is
+missing, SaltyStats will create it for you.
+
+SaltyStats does not violate the rules of Salty Bet. This means that it does
+not come with any stats and it will not bet for you. SaltyStats is a tool to
+make stat tracking easier; it only displays information that you have recorded
+yourself. The longer you use SaltyStats, the more reliable its records become.
+------------------------------------------------------------------------------
+USE:
+
+SaltyStats requires Python to work; it was designed using version 2.7. You can
+download Python from python.org.
+
+After configuring SaltyStats, you can launch it by running saltystats.py.
+Information about how to configure SaltyStats is available below.
+------------------------------------------------------------------------------
+SETUP:
+
+SaltyStats must be properly configured before you can use it. There should be
+a file named "config.cfg" in your SaltyStats directory. If your config.cfg is
+missing, you can try running SaltyStats to create a new one.
+
+Below is some information about each setting in config.cfg...
+
+- username: Your Twitch username. SaltyStats needs this to connect to Salty
+  Bet's IRC channel.
+
+- oauth: For security reasons, Twitch does not allow you to connect to an IRC
+  channel using your Twitch password. Twitch IRC uses OAuth tokens instead. An
+  OAuth token looks like "oauth:asdasd234asd234ad234asds23". You can generate
+  an OAuth token by going to http://twitchapps.com/tmi/.
+
+- statfile: The location of the file SaltyStats saves records to. By default,
+  this is stats.p in your SaltyStats directory. It doesn't have to be in the
+  same directory as SaltyStats, though. You could store your statfile in
+  another folder as long as you provide the complete path to it in config.cfg.
