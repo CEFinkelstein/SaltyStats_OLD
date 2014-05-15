@@ -101,7 +101,7 @@ class Fight:
            combatants.
         """
         print "NEW FIGHT: " + self.player1.name + " vs " + \
-        self.player2.name + " " + self.tier + " Tier"
+        self.player2.name + ", " + self.tier + " Tier"
         self.player1.printStats()
         self.player2.printStats()
 
