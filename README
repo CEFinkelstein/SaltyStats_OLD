@@ -1,4 +1,4 @@
-SaltyStats 0.1 by Mitchell McLean
+SaltyStats 0.1.1 by Mitchell McLean
 ------------------------------------------------------------------------------
 ABOUT:
 
@@ -13,10 +13,10 @@ SaltyStats connects to Twitch chat via IRC. You need to specify your username
 and OAuth token in config.cfg in order to use SaltyStats. If config.cfg is
 missing, SaltyStats will create it for you.
 
-SaltyStats does not violate the rules of Salty Bet. This means that it does
-not come with any stats and it will not bet for you. SaltyStats is a tool to
-make stat tracking easier; it only displays information that you have recorded
-yourself. The longer you use SaltyStats, the more reliable its records become.
+SaltyStats does not come with any stats and it will not bet for you. It is a
+tool that makes stat tracking easier, not a betting bot. SaltyStats only
+displays information that you have recorded, meaning that its records become
+more reliable the longer you use it.
 ------------------------------------------------------------------------------
 USE:
 

@@ -32,8 +32,20 @@ def writeStats():
 class Character:
     name = None
     tier = None
-    wins = None
-    losses = None
+    records = None
+
+    """
+    The records field contains a dict that keeps track of this Character's
+    win/lose records for every tier they have ever fought in. The structure is
+    similar to that of the main character database. The dict uses tiers as
+    keys, and each key directs to a dict where the keys "wins" and "losses"
+    correspond to the win/lose records in the tier.
+
+    This design makes it easy to move characters around between tiers. It also
+    helps get a better sense of a character's performance. For example, they
+    could dominate in B tier, but get wrecked when they get promoted to A. You
+    want to differentiate that.
+    """
 
     def __init__(self, name, tier):
         """Constructor.
@@ -47,21 +59,63 @@ class Character:
         """
         self.name = name
         self.tier = tier
-        self.wins = 0
-        self.losses = 0
+        self.records = {tier:{"wins":0, "losses":0}}
+
+
+    def changeTier(self, newtier):
+        """Change this Character's tier. This process requires moving it
+           around in the master database and updating stats.
+        """
+        global stats
+        if newtier not in self.records:
+            records[newtier] = {"wins":0, "losses":0}
+        del stats[self.tier][self.name]
+        self.tier = newtier
+        stats[self.tier][self.name] = self
+        writeStats()
+
 
     def addWin(self):
         """Increment the win count."""
-        self.wins += 1
+        self.records[self.tier]["wins"] += 1
 
     def addLoss(self):
         """Increment the loss count."""
-        self.losses += 1
+        self.records[self.tier]["losses"] += 1
+
+    def getWinPercentage(self, tier):
+        """Calculate the percentage of matches this Character has won in the
+           given tier, rounded to the nearest hundredth of a percent.
+
+           Arguments:
+
+             tier: The tier whose win percentage will be calculated.
+        """
+        wins = self.records[tier]["wins"]
+        losses = self.records[tier]["losses"]
+        total = wins + losses
+        if total == 0:
+            return 0
+        else:
+            return round((wins / (total*1.0)) * 100, 2)
+
+    def printTierStats(self, tier):
+        """Display this Character's stats for the given tier.
+
+           Arguments:
+             - tier: The tier whose information will be displayed.
+        """
+        print tier + " Tier: " + str(self.getWinPercentage(tier)) + \
+        "% win rate (" + str(self.records[tier]["wins"]) + " wins, " + \
+        str(self.records[tier]["losses"]) + " losses)"
 
     def printStats(self):
-        """Display this Character's win/loss count, as well as their name."""
-        print self.name + "'s stats: " + str(self.wins) + " wins, " + \
-        str(self.losses) + " losses"
+        """Display this Character's win/loss count for every tier they have
+           fought in, as well as their name."""
+        print self.name + "'s stats: "
+        for tier in ["X", "S", "A", "B", "P"]:
+            if tier in self.records:
+                self.printTierStats(tier)
 
 
 class Fight:
@@ -77,9 +131,9 @@ class Fight:
 
            Arguments:
 
-             p1: The name of this fight's red player, in the form of a String.
+             p1: The name of this fight's red player.
 
-             p2: The name of this fight's blue player, in the form of a String.
+             p2: The name of this fight's blue player.
 
              tier: The Tier of the two combatants.
         """
@@ -101,9 +155,11 @@ class Fight:
            combatants.
         """
         print "NEW FIGHT: " + self.player1.name + " vs " + \
-        self.player2.name + ", " + self.tier + " Tier"
+        self.player2.name + ", " + self.tier + " Tier\n"
         self.player1.printStats()
+        print ""
         self.player2.printStats()
+        print ""
 
     def endFight(self, winnername):
         """Announces this fight's winner and updates stats accordingly.
@@ -119,10 +175,30 @@ class Fight:
         if winnername == self.player2.name:
             self.winner = self.player2
             self.loser = self.player1
-        print "WINNER: " + self.winner.name + "\n"
+        print "WINNER: " + self.winner.name + "\n\n"
         self.winner.addWin()
         self.loser.addLoss()
         writeStats()
+
+    def promote(self):
+        """Promote the winner of the fight up one tier. Assume that the fight
+           has ended by the time this runs, meaning that there is a winner.
+        """
+        tiers = ["X", "S", "A", "B", "P"]
+        newtier = tiers[tiers.index(self.winner.tier) - 1]
+        self.winner.changeTier(newtier)
+        print self.winner.name + " has been promoted to " + newtier + \
+        " Tier\n\n"
+
+    def demote(self):
+        """Demote the loser of the fight up one tier. Assume that the fight
+           has ended by the time this runs, meaning that there is a loser.
+        """
+        tiers = ["X", "S", "A", "B", "P"]
+        newtier = tiers[tiers.index(self.loser.tier) + 1]
+        self.loser.changeTier(newtier)
+        print self.loser.name + " has been demoted to " + newtier + \
+        " Tier\n\n"
 
 
 def countCharacters():
@@ -130,8 +206,7 @@ def countCharacters():
     global stats
     total = 0
     for tier in stats:
-        for char in tier:
-            total += 1
+        total += len(stats[tier])
     return total
 
 

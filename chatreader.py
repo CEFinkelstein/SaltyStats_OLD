@@ -27,25 +27,13 @@ def isWaifuMsg(str):
 
 
 """
-A Tier is one of:
-- "X"
-- "S"
-- "A"
-- "B"
-- "P"
-Tiers are used to identify character tiers in the Salty Bet roster.
-
-A CharacterName is a String that is the name of a character in the Salty Bet
-roster.
-
-A Message is one of:
-- ["start", CharacterName, CharacterName, Tier], where the CharacterNames are
-  the names of the combatants in a fight and the Tier is their tier
-- ["end", CharacterName], where the CharacterName is the name of the name of
-  the combatant that just won the most recent fight.
-- ["ignore"]
-"start" and "end" are used to identify whether a fight is starting or ending.
-"ignore" indicates that the Message does not matter.
+A Message is a list of essential information extracted from a Waifu4u IRC
+message. The first item in a Message indicates the event/action ("start" and
+"end" for starting/ending fights, "promote" and "demote" for tier changes).
+The other items in the list provide context to the action, such as the
+characters in a fight, a fight's tier, a fight's winner, etc. Messages with
+"ignore" as the action indicate that SaltyStats should disregard that action;
+for instance, "ignore" is used to avoid tracking exhibition matches.
 """
 
 
@@ -56,8 +44,9 @@ def interpretMsg(str):
 
          str -- An IRC message from Waifu4u in the form of a String.
     """
+    global currentfight
     msg = trimMsg(str)
-    if "Bets are OPEN for " in msg:
+    if "Bets are OPEN" in msg and not "(exhibitions) www.saltybet.com" in msg:
         p1 = msg[18:string.find(msg, " vs ")]
         p2 = msg[(string.find(msg, " vs ") + 4):string.find(msg, "! (")]
         tier = msg[(string.find(msg, "! (") + 3)]
@@ -65,6 +54,10 @@ def interpretMsg(str):
     if " wins! Payouts to Team " in msg:
         winner = msg[0:string.find(msg, " wins! Payouts to Team ")]
         return ["end", winner]
+    if " has been promoted!" in msg:
+        return ["promote"]
+    if " has been demoted!" in msg:
+        return ["demote"]
     else:
         return ["ignore"]
 
@@ -92,6 +85,10 @@ def actOnMsg(msg):
     if msg[0] == "end" and currentfight is not None and not currentfight.over:
         if not currentfight.player1 == "":
             currentfight.endFight(msg[1])
+    if msg[0] == "promote" and currentfight.over:
+        currentfight.promote()
+    if msg[0] == "demote" and currentfight.over:
+        currentfight.demote()
 
 
 def listen():
