@@ -55,9 +55,11 @@ def interpretMsg(str):
         winner = msg[0:string.find(msg, " wins! Payouts to Team ")]
         return ["end", winner]
     if " has been promoted!" in msg:
-        return ["promote"]
+        playername = msg[13:string.find(msg, " has been promoted!")]
+        return ["promote", playername]
     if " has been demoted!" in msg:
-        return ["demote"]
+        playername = msg[13:string.find(msg, " has been demoted!")]
+        return ["demote", playername]
     else:
         return ["ignore"]
 
@@ -85,10 +87,10 @@ def actOnMsg(msg):
     if msg[0] == "end" and currentfight is not None and not currentfight.over:
         if not currentfight.player1 == "":
             currentfight.endFight(msg[1])
-    if msg[0] == "promote" and currentfight.over:
-        currentfight.promote()
-    if msg[0] == "demote" and currentfight.over:
-        currentfight.demote()
+    if msg[0] == "promote" and currentfight is not None:
+        currentfight.promote(msg[1])
+    if msg[0] == "demote" and currentfight is not None:
+        currentfight.demote(msg[1])
 
 
 def listen():

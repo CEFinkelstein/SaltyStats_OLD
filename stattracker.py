@@ -180,25 +180,31 @@ class Fight:
         self.loser.addLoss()
         writeStats()
 
-    def promote(self):
-        """Promote the winner of the fight up one tier. Assume that the fight
-           has ended by the time this runs, meaning that there is a winner.
-        """
+    def promote(self, playername):
+        """Promote the specified player up one tier."""
         tiers = ["X", "S", "A", "B", "P"]
-        newtier = tiers[tiers.index(self.winner.tier) - 1]
-        self.winner.changeTier(newtier)
-        print self.winner.name + " has been promoted to " + newtier + \
-        " Tier\n\n"
+        newtier = tiers[tiers.index(self.tier) - 1]
+        if playername == self.player1.name:
+            self.player1.changeTier(newtier)
+            print self.player1.name + " has been promoted to " + newtier + \
+            " Tier\n\n"
+        if playername == self.player2.name:
+            self.player2.changeTier(newtier)
+            print self.player2.name + " has been promoted to " + newtier + \
+            " Tier\n\n"
 
-    def demote(self):
-        """Demote the loser of the fight up one tier. Assume that the fight
-           has ended by the time this runs, meaning that there is a loser.
-        """
+    def demote(self, playername):
+        """Demote the specified player down one tier."""
         tiers = ["X", "S", "A", "B", "P"]
-        newtier = tiers[tiers.index(self.loser.tier) + 1]
-        self.loser.changeTier(newtier)
-        print self.loser.name + " has been demoted to " + newtier + \
-        " Tier\n\n"
+        newtier = tiers[tiers.index(self.tier) + 1]
+        if playername == self.player1.name:
+            self.player1.changeTier(newtier)
+            print self.player1.name + " has been demoted to " + newtier + \
+            " Tier\n\n"
+        if playername == self.player2.name:
+            self.player2.changeTier(newtier)
+            print self.player2.name + " has been demoted to " + newtier + \
+            " Tier\n\n"
 
 
 def countCharacters():
