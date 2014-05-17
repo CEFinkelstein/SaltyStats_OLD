@@ -55,10 +55,14 @@ def interpretMsg(str):
         winner = msg[0:string.find(msg, " wins! Payouts to Team ")]
         return ["end", winner]
     if " has been promoted!" in msg:
-        playername = msg[13:string.find(msg, " has been promoted!")]
+        startofname = string.find(msg, "ItsBoshyTime ") + 13
+        endofname = string.find(msg, " has been promoted!")
+        playername = msg[startofname:endofname]
         return ["promote", playername]
     if " has been demoted!" in msg:
-        playername = msg[13:string.find(msg, " has been demoted!")]
+        startofname = string.find(msg, "ItsBoshyTime ") + 13
+        endofname = string.find(msg, " has been demoted!")
+        playername = msg[startofname:endofname]
         return ["demote", playername]
     else:
         return ["ignore"]

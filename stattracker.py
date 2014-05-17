@@ -68,7 +68,7 @@ class Character:
         """
         global stats
         if newtier not in self.records:
-            records[newtier] = {"wins":0, "losses":0}
+            self.records[newtier] = {"wins":0, "losses":0}
         del stats[self.tier][self.name]
         self.tier = newtier
         stats[self.tier][self.name] = self
