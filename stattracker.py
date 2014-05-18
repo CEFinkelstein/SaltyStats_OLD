@@ -95,7 +95,7 @@ class Character:
         losses = self.records[tier]["losses"]
         total = wins + losses
         if total == 0:
-            return 0
+            return 0.0
         else:
             return round((wins / (total*1.0)) * 100, 2)
 
@@ -105,9 +105,9 @@ class Character:
            Arguments:
              - tier: The tier whose information will be displayed.
         """
-        print tier + " Tier: " + str(self.getWinPercentage(tier)) + \
-        "% win rate (" + str(self.records[tier]["wins"]) + " wins, " + \
-        str(self.records[tier]["losses"]) + " losses)"
+        print (tier + " Tier: " + str(self.getWinPercentage(tier)) +
+               "% win rate (" + str(self.records[tier]["wins"]) + " wins, " +
+               str(self.records[tier]["losses"]) + " losses)")
 
     def printStats(self):
         """Display this Character's win/loss count for every tier they have
@@ -186,12 +186,12 @@ class Fight:
         newtier = tiers[tiers.index(self.tier) - 1]
         if playername == self.player1.name:
             self.player1.changeTier(newtier)
-            print self.player1.name + " has been promoted to " + newtier + \
-            " Tier\n\n"
+            print (self.player1.name + " has been promoted to " + newtier +
+                   " Tier\n\n")
         if playername == self.player2.name:
             self.player2.changeTier(newtier)
-            print self.player2.name + " has been promoted to " + newtier + \
-            " Tier\n\n"
+            print (self.player2.name + " has been promoted to " + newtier +
+                   " Tier\n\n")
 
     def demote(self, playername):
         """Demote the specified player down one tier."""
@@ -199,12 +199,12 @@ class Fight:
         newtier = tiers[tiers.index(self.tier) + 1]
         if playername == self.player1.name:
             self.player1.changeTier(newtier)
-            print self.player1.name + " has been demoted to " + newtier + \
-            " Tier\n\n"
+            print (self.player1.name + " has been demoted to " + newtier +
+                   " Tier\n\n")
         if playername == self.player2.name:
             self.player2.changeTier(newtier)
-            print self.player2.name + " has been demoted to " + newtier + \
-            " Tier\n\n"
+            print (self.player2.name + " has been demoted to " + newtier +
+                   " Tier\n\n")
 
 
 def countCharacters():
@@ -223,8 +223,8 @@ def loadStats():
     statfile = config.get("Stats", "statfile")
     if os.path.isfile(statfile):
         stats = cPickle.load(open(statfile, "rb"))
-        print "Statfile loaded successfully, " + str(countCharacters()) + \
-        " known characters in roster"
+        print ("Statfile loaded successfully, " + str(countCharacters()) +
+               " known characters in roster")
     else:
         stats = {"X":{},
                  "S":{},

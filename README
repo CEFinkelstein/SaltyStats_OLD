@@ -1,7 +1,9 @@
-SaltyStats 0.1.1 by Mitchell McLean
+SaltyStats 0.1 by Mitchell McLean
 ------------------------------------------------------------------------------
-ABOUT:
 
+
+About
+------------------------------------------------------------------------------
 SaltyStats is a stat tracker for Salty Bet. It records win/loss records of
 characters and displays the stats of a fight's combatants.
 
@@ -17,17 +19,18 @@ SaltyStats does not come with any stats and it will not bet for you. It is a
 tool that makes stat tracking easier, not a betting bot. SaltyStats only
 displays information that you have recorded, meaning that its records become
 more reliable the longer you use it.
-------------------------------------------------------------------------------
-USE:
 
+
+Use
+------------------------------------------------------------------------------
 SaltyStats requires Python to work; it was designed using version 2.7. You can
 download Python from python.org.
 
 After configuring SaltyStats, you can launch it by running saltystats.py.
 Information about how to configure SaltyStats is available below.
-------------------------------------------------------------------------------
-SETUP:
 
+Setup
+------------------------------------------------------------------------------
 SaltyStats must be properly configured before you can use it. There should be
 a file named "config.cfg" in your SaltyStats directory. If your config.cfg is
 missing, you can try running SaltyStats to create a new one.
