@@ -1,5 +1,5 @@
 """
-SaltyStats 0.1.1 by Mitchell McLean
+SaltyStats 0.2.0 by Mitchell McLean
 
 SaltyStats is a stat tracker for Salty Bet. It records win/loss records of
 characters and displays the stats of a fight's combatants. SaltyStats gets

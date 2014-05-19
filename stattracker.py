@@ -47,7 +47,7 @@ class Character:
     want to differentiate that.
     """
 
-    def __init__(self, name, tier):
+    def __init__(self, name, tier, wins=0, losses=0):
         """Constructor.
 
            Arguments:
@@ -59,8 +59,7 @@ class Character:
         """
         self.name = name
         self.tier = tier
-        self.records = {tier:{"wins":0, "losses":0}}
-
+        self.records = {tier:{"wins":wins, "losses":losses}}
 
     def changeTier(self, newtier):
         """Change this Character's tier. This process requires moving it
@@ -73,7 +72,6 @@ class Character:
         self.tier = newtier
         stats[self.tier][self.name] = self
         writeStats()
-
 
     def addWin(self, tier):
         """Increment the win count.
@@ -128,6 +126,10 @@ class Character:
         for tier in ["X", "S", "A", "B", "P"]:
             if tier in self.records:
                 self.printTierStats(tier)
+
+    def getNameAndTier(self):
+        """Produce this Character's name and tier in a string."""
+        return self.name + ", " + self.tier + " Tier"
 
 
 class Fight:

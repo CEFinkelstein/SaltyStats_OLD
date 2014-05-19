@@ -1,4 +1,4 @@
-SaltyStats 0.1 by Mitchell McLean
+SaltyStats 0.2 by Mitchell McLean
 ------------------------------------------------------------------------------
 
 
@@ -11,9 +11,9 @@ SaltyStats works by reading Salty Bet's Twitch chat. Specifically, it pays
 attention to messages from the bot Waifu4u. The bot sends messages about
 fights, and SaltyStats records this data locally.
 
-SaltyStats connects to Twitch chat via IRC. You need to specify your username
-and OAuth token in config.cfg in order to use SaltyStats. If config.cfg is
-missing, SaltyStats will create it for you.
+SaltyStats connects to Twitch chat via IRC. You need to specify your Twitch
+username and OAuth token in config.cfg in order to use SaltyStats. If
+config.cfg is missing, SaltyStats will create it for you.
 
 SaltyStats does not come with any stats and it will not bet for you. It is a
 tool that makes stat tracking easier, not a betting bot. SaltyStats only
@@ -26,8 +26,18 @@ Use
 SaltyStats requires Python to work; it was designed using version 2.7. You can
 download Python from python.org.
 
-After configuring SaltyStats, you can launch it by running saltystats.py.
-Information about how to configure SaltyStats is available below.
+You must configure SaltyStats before you can use it. Information on how to do
+so is available in the "Setup" section below.
+
+There are two scripts in SaltyStats that you can run. The first is
+"saltystats.py", which will launch the main SaltyStats program. It will
+automatically display win/loss records for the current fight and save results.
+The second script is "statmanager.py", which will launch SaltyStats Manager.
+SaltyStats Manager allows you to manually search and modify the stat database.
+You can learn more about how to use SaltyStats manager by running
+statmanager.py and typing "help". You should not run both scripts at the same
+time.
+
 
 Setup
 ------------------------------------------------------------------------------
