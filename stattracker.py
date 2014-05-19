@@ -75,13 +75,25 @@ class Character:
         writeStats()
 
 
-    def addWin(self):
-        """Increment the win count."""
-        self.records[self.tier]["wins"] += 1
+    def addWin(self, tier):
+        """Increment the win count.
 
-    def addLoss(self):
-        """Increment the loss count."""
-        self.records[self.tier]["losses"] += 1
+           Arguments:
+
+           - tier: The tier whose records should be updated. This might not
+             be the character's current tier if they were just promoted.
+        """
+        self.records[tier]["wins"] += 1
+
+    def addLoss(self, tier):
+        """Increment the loss count.
+
+           Arguments:
+
+           - tier: The tier whose records should be updated. This might not
+             be the character's current tier if they were just demoted.
+        """
+        self.records[tier]["losses"] += 1
 
     def getWinPercentage(self, tier):
         """Calculate the percentage of matches this Character has won in the
@@ -176,8 +188,8 @@ class Fight:
             self.winner = self.player2
             self.loser = self.player1
         print "WINNER: " + self.winner.name + "\n\n"
-        self.winner.addWin()
-        self.loser.addLoss()
+        self.winner.addWin(self.tier)
+        self.loser.addLoss(self.tier)
         writeStats()
 
     def promote(self, playername):
@@ -187,11 +199,11 @@ class Fight:
         if playername == self.player1.name:
             self.player1.changeTier(newtier)
             print (self.player1.name + " has been promoted to " + newtier +
-                   " Tier\n\n")
+                   " Tier")
         if playername == self.player2.name:
             self.player2.changeTier(newtier)
             print (self.player2.name + " has been promoted to " + newtier +
-                   " Tier\n\n")
+                   " Tier")
 
     def demote(self, playername):
         """Demote the specified player down one tier."""
@@ -200,13 +212,11 @@ class Fight:
         if playername == self.player1.name:
             self.player1.changeTier(newtier)
             print (self.player1.name + " has been demoted to " + newtier +
-                   " Tier\n\n")
+                   " Tier")
         if playername == self.player2.name:
             self.player2.changeTier(newtier)
             print (self.player2.name + " has been demoted to " + newtier +
-                   " Tier\n\n")
-
-
+                   " Tier")
 def countCharacters():
     """Count how many characters have records in the statfile"""
     global stats
