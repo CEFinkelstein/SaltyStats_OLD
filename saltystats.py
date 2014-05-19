@@ -68,7 +68,7 @@ def createConfig():
 
 def main():
     """Run the complete SaltyStats program"""
-    print "SaltyStats 0.1.2 by Mitchell McLean"
+    print "SaltyStats 0.2.0 by Mitchell McLean"
     checkConfig()
     stattracker.loadStats()
     print "\n"
