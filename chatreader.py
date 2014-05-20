@@ -105,10 +105,9 @@ def listen():
             for line in temp:
                 if isWaifuMsg(line):
                     actOnMsg(line)
-        except socket.error as serr:
-            if serr.errno == errno.WSAECONNRESET:
-                print "ERROR: Your Twitch login information is invalid.\n"
-                print ("Verify the information in config.conf and try " +
-                       "again. If you recently generated a new OAuth, any " +
-                       "ones you previously generated are no longer valid.")
-                quitPrompt()
+        except socket.error:
+            print "ERROR: Your Twitch login information is invalid.\n"
+            print ("Verify the information in config.conf and try again. " +
+                   "If you recently generated a new OAuth, any ones you " +
+                   "previously generated are no longer valid.")
+            quitPrompt()
