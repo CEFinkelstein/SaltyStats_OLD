@@ -8,9 +8,18 @@ import socket
 import string
 import stattracker
 import ConfigParser
+import errno
+from socket import error, gaierror
+import sys
 
 
 currentfight = None
+
+
+def quitPrompt():
+    """Prompt the user to press any key to quit, then terminate."""
+    raw_input("\nPress any key to quit.")
+    sys.exit()
 
 
 def isWaifuMsg(str):
@@ -55,12 +64,12 @@ def actOnMsg(str):
         not currentfight.over):
         winner = msg[0:string.find(msg, " wins! Payouts to Team ")]
         currentfight.endFight(winner)
-    if " has been promoted!" in msg:
+    if " has been promoted!" in msg and currentfight is not None:
         startofname = string.find(msg, "ItsBoshyTime ") + 13
         endofname = string.find(msg, " has been promoted!")
         playername = msg[startofname:endofname]
         currentfight.promote(playername)
-    if " has been demoted!" in msg:
+    if " has been demoted!" in msg and currentfight is not None:
         startofname = string.find(msg, "ItsBoshyTime ") + 13
         endofname = string.find(msg, " has been demoted!")
         playername = msg[startofname:endofname]
@@ -75,17 +84,31 @@ def listen():
     oauth = config.get("Twitch", "oauth")
     readbuffer=""
     # Connect to Salty Bet chat using your credentials
-    s=socket.socket()
-    s.connect(("irc.twitch.tv", 6667))
-    s.send("PASS " + oauth + "\r\n")
-    s.send("NICK " + username + "\r\n")
-    s.send("JOIN #saltybet\r\n")
+    try:
+        s=socket.socket()
+        s.connect(("irc.twitch.tv", 6667))
+        s.send("PASS " + oauth + "\r\n")
+        s.send("NICK " + username + "\r\n")
+        s.send("JOIN #saltybet\r\n")
+    except socket.gaierror:
+        print "ERROR: Could not connect to Salty Bet.\n"
+        print ("Make sure that you have an internet connection and try " +
+               "again.")
+        quitPrompt()
     # Read messages and PONG to stay connected
     while True:
-        s.send("PONG tmi.twitch.tv\r\n") # Maybe do this every minute?
-        readbuffer = readbuffer + s.recv(1024)
-        temp = string.split(readbuffer, "\n")
-        readbuffer = temp.pop()
-        for line in temp:
-            if isWaifuMsg(line):
-                actOnMsg(line)
+        try:
+            s.send("PONG tmi.twitch.tv\r\n") # Maybe do this every minute?
+            readbuffer = readbuffer + s.recv(1024)
+            temp = string.split(readbuffer, "\n")
+            readbuffer = temp.pop()
+            for line in temp:
+                if isWaifuMsg(line):
+                    actOnMsg(line)
+        except socket.error as serr:
+            if serr.errno == errno.WSAECONNRESET:
+                print "ERROR: Your Twitch login information is invalid.\n"
+                print ("Verify the information in config.conf and try " +
+                       "again. If you recently generated a new OAuth, any " +
+                       "ones you previously generated are no longer valid.")
+                quitPrompt()
