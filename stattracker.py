@@ -33,6 +33,7 @@ class Character:
     name = None
     tier = None
     records = None
+    streak = None
 
     """
     The records field contains a dict that keeps track of this Character's
@@ -60,6 +61,7 @@ class Character:
         self.name = name
         self.tier = tier
         self.records = {tier:{"wins":wins, "losses":losses}}
+        self.streak = 0
 
     def changeTier(self, newtier):
         """Change this Character's tier. This process requires moving it
@@ -73,6 +75,24 @@ class Character:
         stats[self.tier][self.name] = self
         writeStats()
 
+    def updateStreak(self, result):
+        """Update this Character's win/loss streak.
+
+           Arguments:
+
+             result: The result of the most recent fight. Should be 1 for a
+                     win, -1 for a loss.
+        """
+        if self.streak is None:
+            self.streak = result            
+        elif ((self.streak > 0 and not result > 0) or
+              (self.streak < 0 and not result < 0)):
+            self.streak = result
+        else:
+            self.streak += result
+
+
+
     def addWin(self, tier):
         """Increment the win count.
 
@@ -82,6 +102,7 @@ class Character:
              be the character's current tier if they were just promoted.
         """
         self.records[tier]["wins"] += 1
+        self.updateStreak(1)
 
     def addLoss(self, tier):
         """Increment the loss count.
@@ -92,6 +113,7 @@ class Character:
              be the character's current tier if they were just demoted.
         """
         self.records[tier]["losses"] += 1
+        self.updateStreak(-1)
 
     def getWinPercentage(self, tier):
         """Calculate the percentage of matches this Character has won in the
@@ -121,11 +143,16 @@ class Character:
 
     def printStats(self):
         """Display this Character's win/loss count for every tier they have
-           fought in, as well as their name."""
+           fought in, their name, and their current winning/losing streak.
+        """
         print self.name + "'s stats: "
         for tier in ["X", "S", "A", "B", "P"]:
             if tier in self.records:
                 self.printTierStats(tier)
+        if self.streak > 0:
+            print "Winning streak of " + str(self.streak)
+        elif self.streak is not None and self.streak < 0:
+            print "Losing streak of " + str(abs(self.streak))
 
     def getNameAndTier(self):
         """Produce this Character's name and tier in a string."""

@@ -101,6 +101,7 @@ def help():
            "current tier.")
     print "changetier: Change a character's tier."
     print "changewins: Change a character's win count for their current tier."
+    print "delete: Delete a character from the statfile."
     print "help: Display a list of commands."
     print "quit: Quit SaltyStats Manager."
     print ("search: Search for characters in the given tier whose name " +
