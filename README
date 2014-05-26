@@ -1,11 +1,13 @@
-SaltyStats 0.2 by Mitchell McLean
+SaltyStats 0.3 by Mitchell McLean
 ------------------------------------------------------------------------------
 
 
 About
 ------------------------------------------------------------------------------
 SaltyStats is a stat tracker for Salty Bet. It records win/loss records of
-characters and displays the stats of a fight's combatants.
+characters as well as fight outcomes. At the beginning of a fight, it displays
+the stats of the fight's combatants as well as the outcomes of any previous
+matchups between the combatants.
 
 SaltyStats works by reading Salty Bet's Twitch chat. Specifically, it pays
 attention to messages from the bot Waifu4u. The bot sends messages about

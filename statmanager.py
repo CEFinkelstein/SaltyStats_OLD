@@ -1,9 +1,11 @@
 """
+SaltyStats Manager 0.2 by Mitchell McLean
+
 SaltyStats Manager (statmanager) allows the user to make manual changes to the
-statfile. It can add/remove characters and change win/loss records. It can
-also be used to manually search through character records and display stats.
-These features make it a useful tool for tournaments and exhibitions, since
-SaltyStats does not display or log information during those fights.
+statfile, such as adding/removing characters and changing win/loss records. It
+can also be used to search through character and fight records and display
+stats. These features make it a useful tool for tournaments and exhibitions,
+since SaltyStats does not display or log information during those fights.
 """
 
 
@@ -62,13 +64,39 @@ def checkForStats():
         stattracker.loadStats()
 
 
+def matchup():
+    """Check if the given matchup has happened before and display information
+       about it. Plugs into Fight's searchForRematches method by creating a
+       dummy fight.
+    """
+    p1name = raw_input("Enter Player 1's name (case-sensitive): ")
+    p2name = raw_input("Enter Player 2's name (case-sensitive): ")
+    tier = raw_input("Enter tier of characters: ").upper()
+    if tier not in stattracker.stats["chars"]:
+        print "Invalid tier."
+    else:
+        isvalid = True
+        if p1name not in stattracker.stats["chars"][tier]:
+            print "Player 1 could not be found in " + tier + " Tier."
+            isvalid = False
+        if p2name not in stattracker.stats["chars"][tier]:
+            print "Player 2 could not be found in " + tier + " Tier."
+            isvalid = False
+        if not isvalid:
+            print "Note that names are case-sensitive."
+        else:
+            fightsearch = stattracker.Fight(p1name, p2name, tier, True)
+            fightsearch.searchForRematches()
+
+
+
 def search():
     """Search for characters with the given name or fragment of a name
        (case-insensitive) in the specified tier. Display the results.
     """
     name = raw_input("Enter search term (case-insensitive): ").upper()
     tier = raw_input("Enter tier to search (\"all\" for all tiers): ").upper()
-    tosearch = stattracker.stats
+    tosearch = stattracker.stats["chars"]
     results = []
     if not (tier in tosearch or tier == "ALL"):
         print "Invalid tier."
@@ -94,6 +122,11 @@ def search():
             print item
 
 
+def reload():
+    """Reload the statfile."""
+    checkForStats()
+
+
 def help():
     """Display a list of commands and how to use them."""
     print "add: Add a new character to the statfile."
@@ -103,7 +136,10 @@ def help():
     print "changewins: Change a character's win count for their current tier."
     print "delete: Delete a character from the statfile."
     print "help: Display a list of commands."
+    print ("matchup: Search the fight records for the results of previous " +
+           "matchups between two characters.")
     print "quit: Quit SaltyStats Manager."
+    print "reload: Reload the statfile."
     print ("search: Search for characters in the given tier whose name " +
            "matches/contains the given name.")
     print ("stats: Display the stats of the given character in the given " +
@@ -129,8 +165,12 @@ def runCommand(input):
         delete()
     elif input == "help":
         help()
+    elif input == "matchup":
+        matchup()
     elif input == "quit":
         quit()
+    elif input == "reload":
+        reload()
     elif input == "search":
         search()
     elif input == "stats":
@@ -150,22 +190,22 @@ def stats():
     """Display the stats of the given character in the given tier."""
     character = raw_input("Enter character name (case-sensitive): ")
     tier = raw_input("Enter character's current tier: ").upper()
-    if tier not in stattracker.stats:
+    if tier not in stattracker.stats["chars"]:
         print "Invalid tier."
-    elif character not in stattracker.stats[tier]:
+    elif character not in stattracker.stats["chars"][tier]:
         print "Character could not be found in " + tier + " tier."
         print "Note that names are case-sensitive."
     else:
-        stattracker.stats[tier][character].printStats()
+        stattracker.stats["chars"][tier][character].printStats()
 
 
 def add():
     """Add the given character to the given tier."""
     name = raw_input("Enter character name (case-sensitive): ")
     tier = raw_input("Enter tier: ").upper()
-    if tier not in stattracker.stats:
+    if tier not in stattracker.stats["chars"]:
         print "Invalid tier."
-    elif name in stattracker.stats[tier]:
+    elif name in stattracker.stats["chars"][tier]:
         print ("A character with that name already exists in " + tier +
                " Tier. You might need to delete them.")
     else:
@@ -185,8 +225,9 @@ def add():
                     print "You must enter an integer that is at least 0."
             except ValueError:
                 print "You must enter an integer that is at least 0."
-        stattracker.stats[tier][name] = stattracker.Character(name, tier,
-                                                              wins, losses)
+        stattracker.stats["chars"][tier][name] = stattracker.Character(name,
+                                                             tier, wins,
+                                                             losses)
         print name + " added to " + tier + " Tier"
         save()
 
@@ -195,13 +236,13 @@ def changeWins():
     """Change the given character's win count."""
     name = raw_input("Enter character name (case-sensitive): ")
     tier = raw_input("Enter character's current tier: ").upper()
-    if tier not in stattracker.stats:
+    if tier not in stattracker.stats["chars"]:
         print "Invalid tier."
-    elif name not in stattracker.stats[tier]:
+    elif name not in stattracker.stats["chars"][tier]:
         print "Character could not be found in " + tier + " tier."
         print "Note that names are case-sensitive."
     else:
-        oldwins = stattracker.stats[tier][name].records[tier]["wins"]
+        oldwins = stattracker.stats["chars"][tier][name].records[tier]["wins"]
         newwins = -1
         try:
             while newwins < 0:
@@ -211,7 +252,7 @@ def changeWins():
                         print "You must enter an integer that is at least 0."
         except ValueError:
             print "You must enter an integer that is at least 0."
-        stattracker.stats[tier][name].records[tier]["wins"] = newwins
+        stattracker.stats["chars"][tier][name].records[tier]["wins"] = newwins
         print (name + "'s win count changed from " + str(oldwins) + " to " +
                str(newwins) + " in " + tier + " Tier")
         save()
@@ -221,13 +262,13 @@ def changeLosses():
     """Change the given character's loss count."""
     name = raw_input("Enter character name (case-sensitive): ")
     tier = raw_input("Enter character's current tier: ").upper()
-    if tier not in stattracker.stats:
+    if tier not in stattracker.stats["chars"]:
         print "Invalid tier."
-    elif name not in stattracker.stats[tier]:
+    elif name not in stattracker.stats["chars"][tier]:
         print "Character could not be found in " + tier + " tier."
         print "Note that names are case-sensitive."
     else:
-        oldlosses = stattracker.stats[tier][name].records[tier]["losses"]
+        oldlosses = stattracker.stats["chars"][tier][name].records[tier]["losses"]
         newlosses = -1
         try:
             while newlosses < 0:
@@ -237,7 +278,7 @@ def changeLosses():
                         print "You must enter an integer that is at least 0."
         except ValueError:
             print "You must enter an integer that is at least 0."
-        stattracker.stats[tier][name].records[tier]["losses"] = newlosses
+        stattracker.stats["chars"][tier][name].records[tier]["losses"] = newlosses
         print (name + "'s loss count changed from " + str(oldlosses) + 
                " to " + str(newlosses) + " in " + tier + " Tier")
         save()
@@ -247,17 +288,17 @@ def changeTier():
     """Change the given character's tier."""
     name = raw_input("Enter character name (case-sensitive): ")
     tier = raw_input("Enter character's current tier: ").upper()
-    if tier not in stattracker.stats:
+    if tier not in stattracker.stats["chars"]:
         print "Invalid tier."
-    elif name not in stattracker.stats[tier]:
+    elif name not in stattracker.stats["chars"][tier]:
         print "Character could not be found in " + tier + " tier."
         print "Note that names are case-sensitive."
     else:
         newtier = raw_input("Enter new tier: ").upper()
-        if newtier not in stattracker.stats:
+        if newtier not in stattracker.stats["chars"]:
             print "Invalid tier."
         else:
-            stattracker.stats[tier][name].changeTier(newtier)
+            stattracker.stats["chars"][tier][name].changeTier(newtier)
             print (name + " moved from " + tier + " Tier to " + newtier +
                    " Tier")
             # Character's changeTier method saves statfile
@@ -267,9 +308,9 @@ def delete():
     """Delete the given character in the given tier."""
     character = raw_input("Enter character name (case-sensitive): ")
     tier = raw_input("Enter character's current tier: ").upper()
-    if tier not in stattracker.stats:
+    if tier not in stattracker.stats["chars"]:
         print "Invalid tier."
-    elif character not in stattracker.stats[tier]:
+    elif character not in stattracker.stats["chars"][tier]:
         print "Character could not be found in " + tier + " tier."
         print "Note that names are case-sensitive."
     else:
@@ -280,13 +321,13 @@ def delete():
                                 " Tier? (y/n)\n")
             confirm = confirm.upper()
         if confirm == "Y":
-            del stattracker.stats[tier][character]
+            del stattracker.stats["chars"][tier][character]
             print character + " deleted from " + tier + " Tier"
             save()
 
 
 def main():
-    print "SaltyStats Manager 0.1.0 by Mitchell McLean"
+    print "SaltyStats Manager 0.2.0 by Mitchell McLean"
     loadConfig()
     checkForStats()
     runConsole()
