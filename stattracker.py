@@ -199,7 +199,7 @@ class Fight:
     player1 = None
     player2 = None
     tier = None
-    favored = None
+    dream = None
     winner = None
     loser = None
     over = False
@@ -232,10 +232,9 @@ class Fight:
         if not search:
             self.startFight()
 
-
-    def setFavored(self, p1, p2):
-        """Set the "favored" field to whichever character has odds in their
-           favor.
+    def setDream(self, p1, p2):
+        """If a dream is detected (odds are at least 1.5:1), set this fight's
+           "dream" field to the unfavored character.
 
            Arguments:
 
@@ -243,12 +242,10 @@ class Fight:
 
              p2: The amount of money bet on player 2.
         """
-        if p1 > p2:
-            self.favored = self.player1
-        elif p2 > p1:
-            self.favored = self.player2
-
-
+        if p2 > p1 and (p2 / (p1*1.0)) >= 1.5:
+            self.dream = self.player1
+        elif p1 > p2 and (p1 / (p2*1.0)) >= 1.5:
+            self.dream = self.player2
 
     def searchForRematches(self):
         """Search the statfile's fight records to see if this fight is a
@@ -332,7 +329,7 @@ class Fight:
                 self.loser = self.player1
             print "WINNER: " + self.winner.name + "\n\n"
             self.winner.addWin(self.tier)
-            if self.winner is not self.favored:
+            if self.winner is self.dream:
                 self.winner.addDream(self.tier)
             self.loser.addLoss(self.tier)
             self.recordFightWinner()
@@ -365,6 +362,8 @@ class Fight:
                 self.player2.changeTier(newtier)
                 print (self.player2.name + " has been demoted to " +
                        newtier + " Tier")
+
+
 def countCharacters():
     """Count how many characters have records in the statfile"""
     global stats
@@ -389,8 +388,9 @@ def loadStats():
         if "version" not in stats:
             for tier in stats["chars"]:
                 for char in stats["chars"][tier]:
-                    stats["chars"][tier][char].records[tier]["dreams"] = 0
-            stats["version"] = "0.4.0"
+                    for t in stats["chars"][tier][char].records:
+                        stats["chars"][tier][char].records[t]["dreams"] = 0
+            stats["version"] = "0.4.1"
             cPickle.dump(stats, open(statfile, "wb"))
             print "Statfile upgraded for dream factor"
         print ("Statfile loaded successfully, " + str(countCharacters()) +

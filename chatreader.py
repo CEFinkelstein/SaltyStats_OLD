@@ -64,7 +64,7 @@ def actOnMsg(str):
         msg = msg[(msg.find(") - $") + 5):]
         p1 = int(msg[0:msg.find(", ")].replace(",", ""))
         p2 = int(msg[(msg.find(") - $") + 5):].replace(",", ""))
-        currentfight.setFavored(p1, p2)
+        currentfight.setDream(p1, p2)
     if (" wins! Payouts to Team " in msg and currentfight is not None and
         not currentfight.over):
         winner = msg[0:string.find(msg, " wins! Payouts to Team ")]

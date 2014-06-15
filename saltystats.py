@@ -1,5 +1,5 @@
 """
-SaltyStats 0.4.0 by Mitchell McLean
+SaltyStats 0.4.1 by Mitchell McLean
 
 SaltyStats is a stat tracker for Salty Bet. It records win/loss records of
 characters and displays the stats of a fight's combatants. SaltyStats gets
@@ -68,7 +68,7 @@ def createConfig():
 
 def main():
     """Run the complete SaltyStats program"""
-    print "SaltyStats 0.4.0 by Mitchell McLean"
+    print "SaltyStats 0.4.1 by Mitchell McLean"
     checkConfig()
     stattracker.loadStats()
     print "\n"
