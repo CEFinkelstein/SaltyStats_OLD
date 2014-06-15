@@ -60,6 +60,11 @@ def actOnMsg(str):
         p2 = msg[(string.find(msg, " vs ") + 4):string.find(msg, "! (")]
         tier = msg[(string.find(msg, "! (") + 3)]
         currentfight = stattracker.Fight(p1, p2, tier)
+    if "Bets are locked." in msg and currentfight is not None:
+        msg = msg[(msg.find(") - $") + 5):]
+        p1 = int(msg[0:msg.find(", ")].replace(",", ""))
+        p2 = int(msg[(msg.find(") - $") + 5):].replace(",", ""))
+        currentfight.setFavored(p1, p2)
     if (" wins! Payouts to Team " in msg and currentfight is not None and
         not currentfight.over):
         winner = msg[0:string.find(msg, " wins! Payouts to Team ")]

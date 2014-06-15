@@ -15,6 +15,10 @@ names.
 tier, and then by name. The name key is a string which points to a Character
 object for the character with that name.
 
+Additionally, there is a "version" key that indicates the version of
+SaltyStats that this statfile is compatible with. This is used to upgrade the
+statfile to work with newer versions of SaltyStats.
+
 The database is saved/loaded by pickling it with cPickle. While pickling
 allows for solid performance, it makes the database difficult to work with
 outside of SaltyStats.
@@ -57,7 +61,7 @@ class Character:
     want to differentiate that.
     """
 
-    def __init__(self, name, tier, wins=0, losses=0):
+    def __init__(self, name, tier, wins=0, losses=0, dreams=0):
         """Constructor.
 
            Arguments:
@@ -69,7 +73,7 @@ class Character:
         """
         self.name = name
         self.tier = tier
-        self.records = {tier:{"wins":wins, "losses":losses}}
+        self.records = {tier:{"wins":wins, "losses":losses, "dreams":dreams}}
         self.streak = 0
 
     def changeTier(self, newtier):
@@ -78,7 +82,7 @@ class Character:
         """
         global stats
         if newtier not in self.records:
-            self.records[newtier] = {"wins":0, "losses":0}
+            self.records[newtier] = {"wins":0, "losses":0, "dreams":0}
         del stats["chars"][self.tier][self.name]
         self.tier = newtier
         stats["chars"][self.tier][self.name] = self
@@ -99,8 +103,6 @@ class Character:
             self.streak = result
         else:
             self.streak += result
-
-
 
     def addWin(self, tier):
         """Increment the win count.
@@ -123,6 +125,30 @@ class Character:
         """
         self.records[tier]["losses"] += 1
         self.updateStreak(-1)
+
+    def addDream(self, tier):
+        """Increment the dream count.
+
+           Arguments:
+
+           - tier: Tier to update records for.
+        """
+        self.records[tier]["dreams"] += 1
+
+    def getDreamFactor(self):
+        """Calculate this character's dream factor, which is the number of
+           upsets over the number of wins expressed as a percentage.
+        """
+        dreams = 0
+        wins = 0
+        for tier in self.records:
+            dreams += self.records[tier]["dreams"]
+            wins += self.records[tier]["wins"]
+        if wins == 0:
+            return 0.0
+        else:
+            return round((dreams / (wins*1.0)) * 100, 2)
+
 
     def getWinPercentage(self, tier):
         """Calculate the percentage of matches this Character has won in the
@@ -158,6 +184,7 @@ class Character:
         for tier in ["X", "S", "A", "B", "P"]:
             if tier in self.records:
                 self.printTierStats(tier)
+        print str(self.getDreamFactor()) + "% dream factor"
         if self.streak > 0:
             print "Winning streak of " + str(self.streak)
         elif self.streak is not None and self.streak < 0:
@@ -172,6 +199,7 @@ class Fight:
     player1 = None
     player2 = None
     tier = None
+    favored = None
     winner = None
     loser = None
     over = False
@@ -203,6 +231,24 @@ class Fight:
         self.over = False
         if not search:
             self.startFight()
+
+
+    def setFavored(self, p1, p2):
+        """Set the "favored" field to whichever character has odds in their
+           favor.
+
+           Arguments:
+
+             p1: The amount of money bet on player 1.
+
+             p2: The amount of money bet on player 2.
+        """
+        if p1 > p2:
+            self.favored = self.player1
+        elif p2 > p1:
+            self.favored = self.player2
+
+
 
     def searchForRematches(self):
         """Search the statfile's fight records to see if this fight is a
@@ -275,18 +321,22 @@ class Fight:
 
              winnername: The name of the winning combatant.
         """
-        self.over = True
-        if winnername == self.player1.name:
-            self.winner = self.player1
-            self.loser = self.player2
-        if winnername == self.player2.name:
-            self.winner = self.player2
-            self.loser = self.player1
-        print "WINNER: " + self.winner.name + "\n\n"
-        self.winner.addWin(self.tier)
-        self.loser.addLoss(self.tier)
-        self.recordFightWinner()
-        writeStats()
+        if (winnername == self.player1.name
+            or winnername == self.player2.name):
+            self.over = True
+            if winnername == self.player1.name:
+                self.winner = self.player1
+                self.loser = self.player2
+            if winnername == self.player2.name:
+                self.winner = self.player2
+                self.loser = self.player1
+            print "WINNER: " + self.winner.name + "\n\n"
+            self.winner.addWin(self.tier)
+            if self.winner is not self.favored:
+                self.winner.addDream(self.tier)
+            self.loser.addLoss(self.tier)
+            self.recordFightWinner()
+            writeStats()
 
     def promote(self, playername):
         """Promote the specified player up one tier."""
@@ -336,6 +386,13 @@ def loadStats():
                      "chars":stats}
             cPickle.dump(stats, open(statfile, "wb"))
             print "Statfile upgraded for fight tracking"
+        if "version" not in stats:
+            for tier in stats["chars"]:
+                for char in stats["chars"][tier]:
+                    stats["chars"][tier][char].records[tier]["dreams"] = 0
+            stats["version"] = "0.4.0"
+            cPickle.dump(stats, open(statfile, "wb"))
+            print "Statfile upgraded for dream factor"
         print ("Statfile loaded successfully, " + str(countCharacters()) +
                " known characters in roster")
     else:
