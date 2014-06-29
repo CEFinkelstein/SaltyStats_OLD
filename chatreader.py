@@ -60,7 +60,9 @@ def actOnMsg(str):
         p2 = msg[(string.find(msg, " vs ") + 4):string.find(msg, "! (")]
         tier = msg[(string.find(msg, "! (") + 3)]
         currentfight = stattracker.Fight(p1, p2, tier)
-    if "Bets are locked." in msg and currentfight is not None:
+    if ("Bets are locked." in msg and currentfight is not None and
+        not currentfight.over and currentfight.player1.name in msg and
+        currentfight.player2.name in msg):
         msg = msg[(msg.find(") - $") + 5):]
         p1 = int(msg[0:msg.find(", ")].replace(",", ""))
         p2 = int(msg[(msg.find(") - $") + 5):].replace(",", ""))
@@ -96,9 +98,9 @@ def listen():
         s.send("NICK " + username + "\r\n")
         s.send("JOIN #saltybet\r\n")
     except socket.gaierror:
-        print "ERROR: Could not connect to Salty Bet.\n"
-        print ("Make sure that you have an internet connection and try " +
-               "again.")
+        print "ERROR: Connection error.\n"
+        print ("Make sure that you have an internet connection and can " +
+               "connect to Twitch. Then, try restarting SaltyStats.")
         quitPrompt()
     # Read messages and PONG to stay connected
     while True:
@@ -111,8 +113,9 @@ def listen():
                 if isWaifuMsg(line):
                     actOnMsg(line)
         except socket.error:
-            print "ERROR: Your Twitch login information is invalid.\n"
-            print ("Verify the information in config.conf and try again. " +
-                   "If you recently generated a new OAuth, any ones you " +
-                   "previously generated are no longer valid.")
+            print "ERROR: Twitch communication error.\n"
+            print ("This may have been caused by incorrect information in " +
+                   "your config. Verify the information and try " +
+                   "restarting SaltyStats. If you recently generated a new " +
+                   "OAuth, your old ones are no longer valid.")
             quitPrompt()
