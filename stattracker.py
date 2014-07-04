@@ -243,9 +243,9 @@ class Fight:
 
              p2: The amount of money bet on player 2.
         """
-        if p2 > p1 and (p2 / (p1*1.0)) >= 1.5:
+        if p2 > p1 and p1 != 0 and (p2 / (p1*1.0)) >= 1.5:
             self.dream = self.player1
-        elif p1 > p2 and (p1 / (p2*1.0)) >= 1.5:
+        elif p1 > p2 and p2 != 0 and (p1 / (p2*1.0)) >= 1.5:
             self.dream = self.player2
 
     def searchForRematches(self):
