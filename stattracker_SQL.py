@@ -1,4 +1,3 @@
-from __future__ import print_function
 import os.path
 import ConfigParser
 import mysql.connector
@@ -11,7 +10,7 @@ config.read("config.cfg")
 def vprint(s):
     """Prints a string if the verbose flag is set in config.cfg"""
     if bool(eval(config.get("General","verbose"))):
-        print(s)
+        print "stattracker_SQL: " + s
 
 # connect to mySQL server using config.cfg
 db_host = config.get("Database","host")
@@ -23,22 +22,41 @@ cnx = mysql.connector.connect(host=db_host, port=db_port,
                               user=db_user, password=db_pass,
                               database=db_data)
 cursor = cnx.cursor()
-vprint("stattracker_SQL:Connected to mySQL.")
+vprint("Connected to mySQL.")
 
-def insertFighter(s):
+def insertFighter(name, tier):
     """Inserts a fighter into the fighter table."""
-    statement = ("INSERT IGNORE INTO fighter\n" +
-                 "(name)\n" +
-                 "VALUES\n" +
-                 "('" + s + "');")
-    vprint("stattracker_SQL:\n" +
-           statement)
+    statement = "INSERT IGNORE INTO fighter \n" + \
+                "(name, tier) \n" + \
+                "VALUES \n" + \
+                "('%s','%s');" % (name, tier)
+    vprint(statement)
     cursor.execute(statement)
 
-def cleanDB():
-    """Cleans the database. You shouldn't have delete access unless you're an admin,
-        so if this works for you I really should blame myself."""
+def insertBout():
+    """Inserts a bout, which autoincrements the id and adds a timestamp.
+        Returns the id created."""
+    statement = "INSERT INTO bout () VALUES ();"
+    vprint(statement)
+    cursor.execute(statement)
+    cnx.commit()
+    
+    query = "SELECT max(boutid) FROM bout;"
+    cursor.execute(query)
+    for boutid in cursor:
+        return boutid[0]
 
+def insertParticipation(player1, boutid):
+    
+
+def addBout(player1, player2, tier):
+    """Meant to be executed when chat reader sees a vs. announcement.
+        Adds two players to the fighters table, then creates a bout for them."""
+    insertFighter(player1, tier)
+    insertFighter(player2, tier)
+    boutid = insertBout()
+    
+    
 def closeDB():
     cnx.close()
     cursor.close()
