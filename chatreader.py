@@ -6,15 +6,17 @@ Waifu4u bot. It uses that information to interact with stattracker.
 
 import socket
 import string
-import stattracker
+import stattracker_SQL
 import ConfigParser
 import errno
 from socket import error, gaierror
 import sys
 
 
-currentfight = None
-
+p1name = None
+p2name = None
+boutSem = False #global semaphores to preserve the order of bout, bet, win
+betSem = False
 
 def quitPrompt():
     """Prompt the user to press any key to quit, then terminate."""
@@ -53,25 +55,29 @@ def actOnMsg(str):
 
          - str: An IRC message from Waifu4u.
     """
-    global currentfight
+    global p1name
+    global p2name
+    global boutSem
+    global betSem
     msg = trimMsg(str)
     if "Bets are OPEN" in msg and "(matchmaking) www.saltybet.com" in msg:
-        p1 = msg[18:string.find(msg, " vs ")]
-        p2 = msg[(string.find(msg, " vs ") + 4):string.find(msg, "! (")]
+        p1name = msg[18:string.find(msg, " vs ")]
+        p2name = msg[(string.find(msg, " vs ") + 4):string.find(msg, "! (")]
         tier = msg[(string.find(msg, "! (") + 3)]
-        currentfight = stattracker.Fight(p1, p2, tier)
-    if ("Bets are locked." in msg and currentfight is not None and
-        not currentfight.over and currentfight.player1.name in msg and
-        currentfight.player2.name in msg):
+        #currentfight = stattracker.Fight(p1, p2, tier)
+        stattracker_SQL.addBout(p1name, p2name, tier)
+        boutSem = True
+    if ("Bets are locked." in msg and p1name in msg and
+        p2name in msg and boutSem == True):
         msg = msg[(msg.find(") - $") + 5):]
         p1 = int(msg[0:msg.find(", ")].replace(",", ""))
         p2 = int(msg[(msg.find(") - $") + 5):].replace(",", ""))
-        currentfight.setDream(p1, p2)
-    if (" wins! Payouts to Team " in msg and currentfight is not None and
-        not currentfight.over):
+        stattracker_SQL.addPot(p1name, p2name, p1, p2)
+        betSem = True
+    if (" wins! Payouts to Team " in msg and boutSem == True and betSem == True):
         winner = msg[0:string.find(msg, " wins! Payouts to Team ")]
-        currentfight.endFight(winner)
-    if " has been promoted!" in msg and currentfight is not None:
+        stattracker_SQL.updateWinner(winner)
+    """if " has been promoted!" in msg and currentfight is not None:
         startofname = string.find(msg, "ItsBoshyTime ") + 13
         endofname = string.find(msg, " has been promoted!")
         playername = msg[startofname:endofname]
@@ -80,7 +86,7 @@ def actOnMsg(str):
         startofname = string.find(msg, "ItsBoshyTime ") + 13
         endofname = string.find(msg, " has been demoted!")
         playername = msg[startofname:endofname]
-        currentfight.demote(playername)
+        currentfight.demote(playername)""" #no promotion/demotions stuff yet
 
 
 def listen():

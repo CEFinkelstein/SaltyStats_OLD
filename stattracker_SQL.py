@@ -1,7 +1,15 @@
+"""This handles all the stuff regarding the database.
+The general flow SHOULD be:
+addBout()
+addPot()
+updateWinner()
+"""
+
+
 import os.path
 import ConfigParser
 import mysql.connector
-
+###
 # get config data
 config = ConfigParser.RawConfigParser()
 config.read("config.cfg")
@@ -31,12 +39,13 @@ def insertFighter(name, tier):
                 "VALUES \n" + \
                 "('%s','%s');\n" % (name, tier)
     vprint(statement)
-    cursor.execute(statement)
+    cursor.execute(statement) #execute the statement
+    #COMMIT NOT HERE, used in addBout()
 
 def insertBout():
     """Inserts a bout, which autoincrements the id and adds a timestamp.
         Returns the id created."""
-    statement = "INSERT INTO bout () VALUES ();"
+    statement = "INSERT INTO bout () VALUES ();" #all of this is automatic
     vprint(statement)
     cursor.execute(statement)
     cnx.commit()
@@ -46,9 +55,9 @@ def insertBout():
     vprint(query)
     cursor.execute(query)
     for boutid in cursor:
-        return boutid[0]
+        return boutid[0] #return ID of current bout
 
-def insertParticipation(name, boutid, pot):
+def insertParticipation(name, boutid):
     query = "SELECT fighterid FROM fighter \n" + \
             "WHERE name = '%s'\n" % (name)
     vprint(query)
@@ -57,31 +66,64 @@ def insertParticipation(name, boutid, pot):
         participantid = fighterid[0] #get the ID of the fighter passed to function
 
     statement = "INSERT INTO participation \n" + \
-                "(fighterid, boutid, pot) \n" + \
+                "(fighterid, boutid) \n" + \
                 "VALUES" + \
-                "(%d, %d, %d);\n" % (participantid, boutid, pot)
+                "(%d, %d);\n" % (participantid, boutid)
     vprint(statement)
     cursor.execute(statement)
+    #no commit, since this is just to make addBout easier to read
 
-def addBout(player1, player2, tier, p1pot, p2pot):
+def updatePot(player, pot):
+    """Updates the pot value for one of the players in the current bout."""
+    statement = "UPDATE participation p \n" + \
+            "JOIN fighter f ON f.fighterid = p.fighterid \n" + \
+            "SET pot=%d " % (pot) + \
+            "WHERE f.name='%s' AND boutid=(SELECT max(boutid) FROM bout);\n" % (player)
+    vprint(statement)
+    cursor.execute(statement)
+    #no commit, since this is just to make addPot easier to read
+
+boutSem = False #global semaphores to preserve the order of bout, bet, win
+betSem = False
+
+def addBout(player1, player2, tier):
+    global boutSem
     """Meant to be executed when chat reader sees a vs. announcement.
         Adds two players to the fighters table, then creates a bout for them."""
-    insertFighter(player1, tier)
+    insertFighter(player1, tier) #insert fighters to the fighter table
     insertFighter(player2, tier)
-    boutid = insertBout()
-    insertParticipation(player1, boutid, p1pot)
-    insertParticipation(player2, boutid, p2pot)
-    cnx.commit()
-    
+    boutid = insertBout() #generate a bout
+    insertParticipation(player1, boutid) #create participation records for the fighters
+    insertParticipation(player2, boutid)
+    cnx.commit() #commit changes
+    boutSem = True
+
+def addPot(p1name, p2name, p1pot, p2pot):
+    """Updates pot values for current players"""
+    global boutSem
+    global betSem
+    if boutSem == False:
+        return
+    updatePot(p1name, p1pot)
+    updatePot(p2name, p2pot)
+    cnx.commit() #commit changes
+    betSem = True
+
 def updateWinner(winner):
     """Tags the winner flag on the winner during the latest bout."""
+    global boutSem
+    global betSem
+    if boutSem == False or betSem == False:
+        return
     statement = "UPDATE participation p \n" + \
-                "JOIN fighter f ON f.fighterid = p.fighterid \n " + \
+                "JOIN fighter f ON f.fighterid = p.fighterid \n" + \
                 "SET won=1 \n" + \
                 "WHERE f.name='%s' AND boutid=(SELECT max(boutid) FROM bout);\n" % (winner)
     vprint(statement)
     cursor.execute(statement)
-    cnx.commit()
+    cnx.commit() #commit changes
+    boutSem = False
+    betSem = False
     
 def closeDB():
     cnx.close()
