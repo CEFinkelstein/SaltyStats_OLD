@@ -13,8 +13,8 @@ from socket import error, gaierror
 import sys
 
 
-p1name = None
-p2name = None
+p1name = ""
+p2name = ""
 boutSem = False #global semaphores to preserve the order of bout, bet, win
 betSem = False
 

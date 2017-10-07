@@ -110,7 +110,8 @@ def addPot(p1name, p2name, p1pot, p2pot):
     betSem = True
 
 def updateWinner(winner):
-    """Tags the winner flag on the winner during the latest bout."""
+    """Tags the winner flag on the winner during the latest bout,
+    and tags the lose flag (0 winner) on the loser."""
     global boutSem
     global betSem
     if boutSem == False or betSem == False:
@@ -121,9 +122,26 @@ def updateWinner(winner):
                 "WHERE f.name='%s' AND boutid=(SELECT max(boutid) FROM bout);\n" % (winner)
     vprint(statement)
     cursor.execute(statement)
+    statement = "UPDATE participation \n" + \
+                "SET won=0 \n" +\
+                "WHERE won is null AND boutid=(SELECT max(boutid) FROM bout);\n"
+    vprint(statement)
+    cursor.execute(statement)
     cnx.commit() #commit changes
     boutSem = False
     betSem = False
+
+def promote(fighter):
+    statement = "CALL promote(%s)" % (fighter)
+    vprint(statement)
+    cursor.execute(statement)
+    cnx.commit()
+
+def demote(fighter):
+    statement = "CALL demote(%s)" % (fighter)
+    vprint(statement)
+    cursor.execute(statement)
+    cnx.commit()
     
 def closeDB():
     cnx.close()
