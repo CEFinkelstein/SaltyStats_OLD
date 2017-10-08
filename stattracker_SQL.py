@@ -1,6 +1,8 @@
 """This handles all the stuff regarding the database.
 The general flow SHOULD be:
 addBout()
+- insertFighter 2x
+- insertBout
 addPot()
 updateWinner()
 """
@@ -42,46 +44,23 @@ def insertFighter(name, tier):
     cursor.execute(statement) #execute the statement
     #COMMIT NOT HERE, used in addBout()
 
-def insertBout():
-    """Inserts a bout, which autoincrements the id and adds a timestamp.
-        Returns the id created."""
-    statement = "INSERT INTO bout () VALUES ();" #all of this is automatic
+def insertBout(p1name,p2name):
+    """Inserts a bout between two fighters."""
+    query = ("SELECT fighterid FROM fighter "
+             "WHERE name = '%s' OR name = '%s';" % (p1name,p2name))
+    vprint(query)
+    cursor.execute(query) #get the two fighters' IDs
+    IDs = []
+    p1id = cursor.fetchone()[0]
+    p2id = cursor.fetchone()[0]
+
+    statement = ("INSERT INTO bout "
+                 "(p1id, p2id) "
+                 "VALUES "
+                 "(%d, %d)" % (p1id,p2id))
     vprint(statement)
     cursor.execute(statement)
     cnx.commit()
-
-    #return max boutid (current bout), which will be used in insertParticipation()
-    query = "SELECT max(boutid) FROM bout;\n"
-    vprint(query)
-    cursor.execute(query)
-    for boutid in cursor:
-        return boutid[0] #return ID of current bout
-
-def insertParticipation(name, boutid):
-    query = "SELECT fighterid FROM fighter \n" + \
-            "WHERE name = '%s'\n" % (name)
-    vprint(query)
-    cursor.execute(query)
-    for fighterid in cursor: #iterate over the cursor cause i don't know how to just get the name
-        participantid = fighterid[0] #get the ID of the fighter passed to function
-
-    statement = "INSERT INTO participation \n" + \
-                "(fighterid, boutid) \n" + \
-                "VALUES" + \
-                "(%d, %d);\n" % (participantid, boutid)
-    vprint(statement)
-    cursor.execute(statement)
-    #no commit, since this is just to make addBout easier to read
-
-def updatePot(player, pot):
-    """Updates the pot value for one of the players in the current bout."""
-    statement = "UPDATE participation p \n" + \
-            "JOIN fighter f ON f.fighterid = p.fighterid \n" + \
-            "SET pot=%d " % (pot) + \
-            "WHERE f.name='%s' AND boutid=(SELECT max(boutid) FROM bout);\n" % (player)
-    vprint(statement)
-    cursor.execute(statement)
-    #no commit, since this is just to make addPot easier to read
 
 boutSem = False #global semaphores to preserve the order of bout, bet, win
 betSem = False
@@ -92,43 +71,51 @@ def addBout(player1, player2, tier):
         Adds two players to the fighters table, then creates a bout for them."""
     insertFighter(player1, tier) #insert fighters to the fighter table
     insertFighter(player2, tier)
-    boutid = insertBout() #generate a bout
-    insertParticipation(player1, boutid) #create participation records for the fighters
-    insertParticipation(player2, boutid)
+    insertBout(player1, player2)
     cnx.commit() #commit changes
     boutSem = True
 
-def addPot(p1name, p2name, p1pot, p2pot):
+def addPot(p1pot, p2pot):
     """Updates pot values for current players"""
     global boutSem
     global betSem
     if boutSem == False:
         return
-    updatePot(p1name, p1pot)
-    updatePot(p2name, p2pot)
+    query = "SELECT max(boutid) from bout;" #get current bout id
+    cursor.execute(query)
+    boutID = cursor.fetchone()[0]
+    
+    statement = ("UPDATE bout "
+                 "SET p1pot = %d, p2pot = %d "
+                 "WHERE boutid=%d;" % (p1pot, p2pot, boutID))
+    vprint(statement)
+    cursor.execute(statement)
     cnx.commit() #commit changes
     betSem = True
 
 def updateWinner(winner):
-    """Tags the winner flag on the winner during the latest bout,
-    and tags the lose flag (0 winner) on the loser."""
+    """Updates the won attribute for the latest bout. 0 for p1 win, 1 for p2 win."""
     global boutSem
     global betSem
-    if boutSem == False or betSem == False:
+    if boutSem == False or betSem == False: #prevent function from going too early
         return
-    statement = "UPDATE participation p \n" + \
-                "JOIN fighter f ON f.fighterid = p.fighterid \n" + \
-                "SET won=1 \n" + \
-                "WHERE f.name='%s' AND boutid=(SELECT max(boutid) FROM bout);\n" % (winner)
+    query = ("SELECT fighterid FROM fighter " #get winner's fighterID
+             "WHERE name = '%s';" % (winner))
+    vprint(query)
+    cursor.execute(query)
+    winnerID=cursor.fetchone()[0]
+
+    query = ("SELECT max(boutid) FROM bout;") #get latest bout
+    vprint(query)
+    cursor.execute(query)
+    boutID=cursor.fetchone()[0]
+    
+    statement = "CALL mark_winner(%d, %d)" % (winnerID, boutID) #update winner flag
     vprint(statement)
     cursor.execute(statement)
-    statement = "UPDATE participation \n" + \
-                "SET won=0 \n" +\
-                "WHERE won is null AND boutid=(SELECT max(boutid) FROM bout);\n"
-    vprint(statement)
-    cursor.execute(statement)
+    
     cnx.commit() #commit changes
-    boutSem = False
+    boutSem = False #reset semaphores
     betSem = False
 
 def promote(fighter):

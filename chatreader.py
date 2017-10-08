@@ -55,10 +55,10 @@ def actOnMsg(str):
 
          - str: An IRC message from Waifu4u.
     """
-    global p1name
-    global p2name
     global boutSem
     global betSem
+    global p1name
+    global p2name
     msg = trimMsg(str)
     if "Bets are OPEN" in msg and "(matchmaking) www.saltybet.com" in msg:
         p1name = msg[18:string.find(msg, " vs ")]
@@ -72,17 +72,19 @@ def actOnMsg(str):
         msg = msg[(msg.find(") - $") + 5):]
         p1 = int(msg[0:msg.find(", ")].replace(",", ""))
         p2 = int(msg[(msg.find(") - $") + 5):].replace(",", ""))
-        stattracker_SQL.addPot(p1name, p2name, p1, p2)
+        stattracker_SQL.addPot(p1, p2)
         betSem = True
     if (" wins! Payouts to Team " in msg) and boutSem == True and betSem == True:
         winner = msg[0:string.find(msg, " wins! Payouts to Team ")]
         stattracker_SQL.updateWinner(winner)
-    if (" has been promoted!" in msg) and boutSem == True and betSem == True:
+        betSem = False
+        boutSem = False
+    if (" has been promoted!" in msg):
         startofname = string.find(msg, "ItsBoshyTime ") + 13
         endofname = string.find(msg, " has been promoted!")
         playername = msg[startofname:endofname]
         stattracker_SQL.promote(playername)
-    if (" has been demoted!" in msg) and boutSem == True and betSem == True:
+    if (" has been demoted!" in msg):
         startofname = string.find(msg, "ItsBoshyTime ") + 13
         endofname = string.find(msg, " has been demoted!")
         playername = msg[startofname:endofname]
