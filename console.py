@@ -10,7 +10,7 @@ changes to the statfile, so you can safely run it alongside SaltyStats.
 """
 
 
-import stattracker
+import stattracker_SQL
 import ConfigParser
 import os.path
 import sys
@@ -207,7 +207,7 @@ def stats():
 
 
 def main():
-    print "SaltyStats Console 1.0 by Mitchell McLean"
+    print "SaltyStats Console 1.0 by Mitchell McLean (SQL stuff by Cobi Finkelstein)"
     loadConfig()
     checkForStats()
     runConsole()

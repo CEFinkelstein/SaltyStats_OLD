@@ -68,25 +68,25 @@ def actOnMsg(str):
         stattracker_SQL.addBout(p1name, p2name, tier)
         boutSem = True
     if ("Bets are locked." in msg and p1name in msg and
-        p2name in msg and boutSem == True):
+        p2name in msg) and boutSem == True:
         msg = msg[(msg.find(") - $") + 5):]
         p1 = int(msg[0:msg.find(", ")].replace(",", ""))
         p2 = int(msg[(msg.find(") - $") + 5):].replace(",", ""))
         stattracker_SQL.addPot(p1name, p2name, p1, p2)
         betSem = True
-    if (" wins! Payouts to Team " in msg and boutSem == True and betSem == True):
+    if (" wins! Payouts to Team " in msg) and boutSem == True and betSem == True:
         winner = msg[0:string.find(msg, " wins! Payouts to Team ")]
         stattracker_SQL.updateWinner(winner)
-    """if " has been promoted!" in msg and currentfight is not None:
+    if (" has been promoted!" in msg) and boutSem == True and betSem == True:
         startofname = string.find(msg, "ItsBoshyTime ") + 13
         endofname = string.find(msg, " has been promoted!")
         playername = msg[startofname:endofname]
-        currentfight.promote(playername)
-    if " has been demoted!" in msg and currentfight is not None:
+        stattracker_SQL.promote(playername)
+    if (" has been demoted!" in msg) and boutSem == True and betSem == True:
         startofname = string.find(msg, "ItsBoshyTime ") + 13
         endofname = string.find(msg, " has been demoted!")
         playername = msg[startofname:endofname]
-        currentfight.demote(playername)""" #no promotion/demotions stuff yet
+        stattracker_SQL.demote(playername)
 
 
 def listen():
