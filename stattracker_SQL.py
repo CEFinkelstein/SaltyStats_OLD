@@ -36,21 +36,24 @@ vprint("Connected to mySQL.\n")
 
 def insertFighter(name, tier):
     """Inserts a fighter into the fighter table."""
-    statement = "CALL insert_fighter('%s','%s');" % (name, tier)
+    statement = ("INSERT IGNORE INTO fighter "
+                 "(name, tier) "
+                 "VALUES "
+                 "('%s','%s');" % (name, tier))
     vprint(statement)
     cursor.execute(statement) #execute the statement
-    #COMMIT NOT HERE, used in addBout()
-
+    cnx.commit()
+    
 def insertBout(p1name,p2name):
     """Inserts a bout between two fighters."""
-    query = ("CALL select_IDs('%s','%s');" % (p1name,p2name))
+    query = ("CALL select_IDs('%s','%s')" % (p1name,p2name))
     vprint(query)
-    cursor.execute(query) #get the two fighters' IDs
+    cursor.execute(query,multi=True) #get the two fighters' IDs
     IDs = []
     p1id = cursor.fetchone()[0]
     p2id = cursor.fetchone()[0]
 
-    statement = ("CALL insert_bout(%d,%d);" % (p1id,p2id))
+    statement = ("CALL insert_bout(%d,%d)" % (p1id,p2id))
     vprint(statement)
     cursor.execute(statement)
     cnx.commit()
