@@ -1,7 +1,8 @@
 #################
 ## Eclipse
 #################
-
+table_populator.py
+mySQLconnect.sh
 *.pydevproject
 .project
 .metadata
