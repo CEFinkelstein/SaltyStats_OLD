@@ -36,28 +36,21 @@ vprint("Connected to mySQL.\n")
 
 def insertFighter(name, tier):
     """Inserts a fighter into the fighter table."""
-    statement = "INSERT IGNORE INTO fighter \n" + \
-                "(name, tier) \n" + \
-                "VALUES \n" + \
-                "('%s','%s');\n" % (name, tier)
+    statement = "CALL insert_fighter('%s','%s');" % (name, tier)
     vprint(statement)
     cursor.execute(statement) #execute the statement
     #COMMIT NOT HERE, used in addBout()
 
 def insertBout(p1name,p2name):
     """Inserts a bout between two fighters."""
-    query = ("SELECT fighterid FROM fighter "
-             "WHERE name = '%s' OR name = '%s';" % (p1name,p2name))
+    query = ("CALL select_IDs('%s','%s');" % (p1name,p2name))
     vprint(query)
     cursor.execute(query) #get the two fighters' IDs
     IDs = []
     p1id = cursor.fetchone()[0]
     p2id = cursor.fetchone()[0]
 
-    statement = ("INSERT INTO bout "
-                 "(p1id, p2id) "
-                 "VALUES "
-                 "(%d, %d)" % (p1id,p2id))
+    statement = ("CALL insert_bout(%d,%d);" % (p1id,p2id))
     vprint(statement)
     cursor.execute(statement)
     cnx.commit()
@@ -85,9 +78,7 @@ def addPot(p1pot, p2pot):
     cursor.execute(query)
     boutID = cursor.fetchone()[0]
     
-    statement = ("UPDATE bout "
-                 "SET p1pot = %d, p2pot = %d "
-                 "WHERE boutid=%d;" % (p1pot, p2pot, boutID))
+    statement = ("CALL add_pot(%d,%d,%d)" % (p1pot, p2pot, boutID))
     vprint(statement)
     cursor.execute(statement)
     cnx.commit() #commit changes
