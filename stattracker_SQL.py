@@ -46,10 +46,10 @@ def insertFighter(name, tier):
     
 def insertBout(p1name,p2name):
     """Inserts a bout between two fighters."""
-    query = ("CALL select_IDs('%s','%s')" % (p1name,p2name))
+    query = ("SELECT fighterid FROM fighter "
+             "WHERE name='%s' OR name='%s';" % (p1name,p2name))
     vprint(query)
-    cursor.execute(query,multi=True) #get the two fighters' IDs
-    IDs = []
+    cursor.execute(query) #get the two fighters' IDs
     p1id = cursor.fetchone()[0]
     p2id = cursor.fetchone()[0]
 
@@ -67,6 +67,7 @@ def addBout(player1, player2, tier):
         Adds two players to the fighters table, then creates a bout for them."""
     insertFighter(player1, tier) #insert fighters to the fighter table
     insertFighter(player2, tier)
+    cnx.commit()
     insertBout(player1, player2)
     cnx.commit() #commit changes
     boutSem = True
