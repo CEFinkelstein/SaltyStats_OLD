@@ -53,9 +53,9 @@ def insertBout(p1name,p2name):
     p1id = cursor.fetchone()[0]
     p2id = cursor.fetchone()[0]
 
-    statement = ("CALL insert_bout(%d,%d)" % (p1id,p2id))
-    vprint(statement)
-    cursor.execute(statement)
+    #statement = ("CALL insert_bout(%d,%d)" % (p1id,p2id))
+    #vprint(statement)
+    cursor.callproc("insert_bout",(p1id,p2id))
     cnx.commit()
 
 boutSem = False #global semaphores to preserve the order of bout, bet, win
@@ -82,9 +82,10 @@ def addPot(p1pot, p2pot):
     cursor.execute(query)
     boutID = cursor.fetchone()[0]
     
-    statement = ("CALL add_pot(%d,%d,%d)" % (p1pot, p2pot, boutID))
-    vprint(statement)
-    cursor.execute(statement)
+    #statement = ("CALL add_pot(%d,%d,%d)" % (p1pot, p2pot, boutID))
+    #vprint(statement)
+    #cursor.execute(statement)
+    cursor.callproc("add_pot",(p1pot,p2pot,boutID))
     cnx.commit() #commit changes
     betSem = True
 
@@ -105,9 +106,10 @@ def updateWinner(winner):
     cursor.execute(query)
     boutID=cursor.fetchone()[0]
     
-    statement = "CALL mark_winner(%d, %d)" % (winnerID, boutID) #update winner flag
-    vprint(statement)
-    cursor.execute(statement)
+    #statement = "CALL mark_winner(%d, %d)" % (winnerID, boutID) #update winner flag
+    #vprint(statement)
+    #cursor.execute(statement)
+    cursor.callproc("mark_winner",(winnerID,boutID))
     
     cnx.commit() #commit changes
     boutSem = False #reset semaphores
